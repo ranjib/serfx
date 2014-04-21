@@ -23,22 +23,27 @@ module Serfx
       end
 
       def start(numbers = 1, opts = {})
-        fail "Already running serf(#{@pids.inspect})" unless @pids.empty?
-        @tmpdir = Dir.mktmpdir
-        @pids << daemonize(@tmpdir)
-        (numbers - 1).times do |n|
-          @pids << daemonize(@tmpdir)
+        (numbers).times do |n|
+          join = if @pids.empty?
+                   false
+                 elsif opts.key?(:join)
+                   opts[:join]
+                 else
+                   true
+                 end
+          @pids << daemonize(Dir.mktmpdir, join)
         end
       end
 
-      def daemonize(dir)
+      def daemonize(dir, join = false)
         n = @pids.size
         config = File.expand_path('../data/config.json', __FILE__)
         bind, rpc = 4000 + n, 5000 + n
         args = "-bind=127.0.0.1:#{bind} -config-file=#{config}"
         args << " -rpc-addr=127.0.0.1:#{rpc} -node=node_#{n}"
-        args << ' -join=127.0.0.01:4000' unless @pids.empty?
+        args << ' -join=127.0.0.01:4000' if join
         command = serf_binary + ' agent ' + args
+        #puts command
         pid = spawn(command, out: '/dev/null', chdir: dir)
         Process.detach(pid)
         pid

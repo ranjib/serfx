@@ -4,6 +4,7 @@ require 'msgpack'
 require 'timeout'
 require 'serfx/log'
 require 'serfx/response'
+require 'socket'
 
 module Serfx
   # provide tcp connection layer and msgpack wrapping
