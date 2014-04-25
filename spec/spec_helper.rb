@@ -36,17 +36,21 @@ module Serfx
       end
 
       def daemonize(dir, join = false)
-        n = @pids.size
-        config = File.expand_path('../data/config.json', __FILE__)
-        bind, rpc = 4000 + n, 5000 + n
-        args = "-bind=127.0.0.1:#{bind} -config-file=#{config}"
-        args << " -rpc-addr=127.0.0.1:#{rpc} -node=node_#{n}"
-        args << ' -join=127.0.0.01:4000' if join
-        command = serf_binary + ' agent ' + args
-        #puts command
+        command = serf_command(join)
+        # puts command
         pid = spawn(command, out: '/dev/null', chdir: dir)
         Process.detach(pid)
         pid
+      end
+
+      def serf_command(join)
+        n = @pids.size
+        group = n.even? ? 'even' : 'odd'
+        config = File.expand_path('../data/config.json', __FILE__)
+        args = " -bind 127.0.0.1:#{4000 + n} -rpc-addr 127.0.0.1:#{5000 + n} "
+        args << "-config-file #{config} -node node_#{n} -tag group=#{group}"
+        args << ' -join 127.0.0.01:4000' if join
+        serf_binary + ' agent ' + args
       end
 
       def serf_binary

@@ -4,11 +4,15 @@ require 'msgpack'
 require 'timeout'
 require 'serfx/log'
 require 'serfx/response'
+require 'serfx/commands'
+require 'serfx/exceptions'
 require 'socket'
+require 'io/wait'
 
 module Serfx
   # provide tcp connection layer and msgpack wrapping
   class Connection
+    include Serfx::Commands
     COMMANDS = {
       handshake:        [:header],
       auth:             [:header],
@@ -26,14 +30,15 @@ module Serfx
       respond:          [:header]
       }
 
-    attr_reader :host, :port, :seq, :timeout
+    attr_reader :host, :port, :seq
 
     def initialize(host, port, authkey = nil)
       @host = host
       @port = port
       @seq = 0
-      @timeout = 3
       @authkey = authkey
+      @requests = {}
+      @responses = {}
     end
 
     def socket
@@ -42,6 +47,7 @@ module Serfx
 
     def tcp_send(command, body = nil)
       @seq += 1
+      Log.info("Seq:#{seq} Command:#{command}")
       header = {
         'Command' => command.to_s.gsub('_', '-'),
         'Seq' => seq
@@ -50,22 +56,23 @@ module Serfx
       buff << header.to_msgpack
       buff << body.to_msgpack unless body.nil?
       socket.send(buff.to_str, 0)
+      @requests[seq] = {header: header, ack?: false}
+      seq
+    end
+
+    def check_rpc_error!(header)
+      raise RPCError, header['Error'] unless header['Error'].empty?
     end
 
     def read_response(command)
       unpacker = MessagePack::Unpacker.new(socket)
-      header =  read(unpacker)
+      header =  unpacker.read
+      check_rpc_error!(header)
       if COMMANDS[command].include?(:body)
-        body = read(unpacker)
+        body = unpacker.read
         Response.new(header, body)
       else
         Response.new(header)
-      end
-    end
-
-    def read(reader)
-      Timeout.timeout(timeout) do
-        reader.read
       end
     end
 
@@ -83,68 +90,8 @@ module Serfx
     def request(command, body = nil)
       handshake if seq == 0
       auth unless @authkey.nil?
-      tcp_send(command, body)
+      id = tcp_send(command, body)
       read_response(command)
-    end
-
-    def event(name, payload = nil, coalesce = true)
-      event = {
-        'Name' => name,
-        'Coalesce' => coalesce
-      }
-      event['Payload'] = payload unless payload.nil?
-      request(:event, event)
-    end
-
-    def force_leave(node)
-      request(:force_leave, 'Node' => node)
-    end
-    
-    def join(existing, replay = false)
-      request(:join, 'Existing' => existing, 'Replay' => replay)
-    end
-
-    def members
-      request(:members)
-    end
-
-    def members_filtered(tags, status = "alive", name = nil)
-     filter = {
-       'Tags' => tags,
-       'Status' => status
-      }
-     filter['Name'] = name unless name.nil?
-     request(:members_filtered, filter)
-    end
-
-    def tags(tags, delete_tags)
-      request(:tags, 'Tags' => tags, 'DeleteTags' => delete_tags) 
-    end
-
-    def stream(types)
-      request(:stream, 'Type' => types)
-    end
-
-    def monitor(loglevel = 'debug')
-      request(:monitor, 'LogLevel' => loglevel.upcase)
-    end
-
-    def stop(sequence_number)
-      request(:stop, 'Stop' => sequence_number)
-    end
-
-    def leave
-      request(:leave)
-    end
-
-    def query(name, payload, opts = nil)
-      params = { 'Name' => name, 'Payload' => payload }
-      params.merge!(opts)
-      request(:query, params)
-    end
-
-    def respond(id, payload)
-      request(:response, 'ID' => id, 'Payload' => payload)
     end
   end
 end
