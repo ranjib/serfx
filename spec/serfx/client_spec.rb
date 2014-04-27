@@ -17,7 +17,7 @@ describe Serfx::Client do
     stop_cluster
   end
 
-  let(:conn) do
+  let!(:conn) do
     Serfx::Connection.new('127.0.0.1', 5000, 'awesomesecret')
   end
 
@@ -86,17 +86,21 @@ describe Serfx::Client do
   end
 
   it '#stream' do
-    ev = nil
-    response, thread = conn.stream('user:test') do |event|
-      puts event.inspect
-      ev = event
+    c = Serfx::Connection.new('127.0.0.1', 5000, 'awesomesecret')
+    data = nil
+    res, t = c.stream('user:test') do |event|
+      data = event
     end
     sleep 2
+    #puts 'Firing test event 1'
     conn.event('test', 'whoa')
-    conn.stop(response.header.seq)
     sleep 2
-    thread.kill
-    expect(response.header.error).to be_empty
-    expect(ev.body['Payload']).to eq('whoa')
+    #puts 'Stopping streaming'
+    c.stop(res.header.seq)
+    sleep 2
+    expect(data['Name']).to eq('test')
+    expect(data['Payload']).to eq('whoa')
+    expect(data['Coalesce']).to be_true
+    expect(data['Event']).to eq('user')
   end
 end

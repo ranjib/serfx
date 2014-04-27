@@ -8,11 +8,13 @@ require 'serfx/commands'
 require 'serfx/exceptions'
 require 'socket'
 require 'io/wait'
+require 'thread'
+
+Thread.abort_on_exception = true
 
 module Serfx
   # provide tcp connection layer and msgpack wrapping
   class Connection
-    include Serfx::Commands
     COMMANDS = {
       handshake:        [:header],
       auth:             [:header],
@@ -30,6 +32,8 @@ module Serfx
       respond:          [:header]
       }
 
+    include Serfx::Commands
+
     attr_reader :host, :port, :seq
 
     def initialize(host, port, authkey = nil)
@@ -45,31 +49,40 @@ module Serfx
       @socket ||= TCPSocket.new(host, port)
     end
 
+    def unpacker
+      @unpacker ||= MessagePack::Unpacker.new(socket)
+    end
+
+    def read_data
+      unpacker.read
+    end
+
     def tcp_send(command, body = nil)
       @seq += 1
-      Log.info("Seq:#{seq} Command:#{command}")
       header = {
         'Command' => command.to_s.gsub('_', '-'),
         'Seq' => seq
         }
+      Log.info("#{__method__}|Header: #{header.inspect}")
       buff = MessagePack::Buffer.new
       buff << header.to_msgpack
       buff << body.to_msgpack unless body.nil?
-      socket.send(buff.to_str, 0)
+      res = socket.send(buff.to_str, 0)
+      Log.info("#{__method__}|Res: #{res.inspect}")
       @requests[seq] = {header: header, ack?: false}
       seq
     end
 
     def check_rpc_error!(header)
+      Log.debug header.inspect
       raise RPCError, header['Error'] unless header['Error'].empty?
     end
 
     def read_response(command)
-      unpacker = MessagePack::Unpacker.new(socket)
-      header =  unpacker.read
+      header =  read_data
       check_rpc_error!(header)
       if COMMANDS[command].include?(:body)
-        body = unpacker.read
+        body = read_data
         Response.new(header, body)
       else
         Response.new(header)

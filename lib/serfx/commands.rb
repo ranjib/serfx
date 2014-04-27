@@ -1,4 +1,5 @@
 # encoding: UTF-8
+#
 
 module Serfx
   # implements serf's rpc commands
@@ -39,21 +40,22 @@ module Serfx
 
     def stream(types, &block)
       res = request(:stream, 'Type' => types)
-      t = Thread.new do
+      t = Thread.start do
         loop do
-          if socket.ready?
-            unpacker = MessagePack::Unpacker.new(socket)
-            header =  unpacker.read
-            check_rpc_error!(header)
-            body = unpacker.read
-            new_event = Response.new(header, body)
-            block.call(new_event) if block
+          header =  read_data
+          Log.info("#{__method__}|Header: #{header.inspect}")
+          check_rpc_error!(header)
+          if header['Seq'] == res.header.seq
+            ev = read_data
+            block.call(ev) if block
           else
-            sleep 0.1
+            Log.info("#{__method__}|Sequence not matched. breaking")
+            break
           end
+          sleep 0.1
         end
       end
-      [res, t]
+      [ res, t]
     end
 
     def monitor(loglevel = 'debug')
@@ -61,7 +63,7 @@ module Serfx
     end
 
     def stop(sequence_number)
-      request(:stop, 'Stop' => sequence_number)
+      tcp_send(:stop, 'Stop' => sequence_number)
     end
 
     def leave
