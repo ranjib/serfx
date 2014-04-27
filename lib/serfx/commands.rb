@@ -42,14 +42,12 @@ module Serfx
       res = request(:stream, 'Type' => types)
       t = Thread.start do
         loop do
-          header =  read_data
-          Log.info("#{__method__}|Header: #{header.inspect}")
+          header = read_data
           check_rpc_error!(header)
           if header['Seq'] == res.header.seq
             ev = read_data
             block.call(ev) if block
           else
-            Log.info("#{__method__}|Sequence not matched. breaking")
             break
           end
           sleep 0.1
@@ -70,14 +68,26 @@ module Serfx
       request(:leave)
     end
 
-    def query(name, payload, opts = nil)
+    def query(name, payload, opts = {}, &block)
       params = { 'Name' => name, 'Payload' => payload }
       params.merge!(opts)
-      request(:query, params)
+      res = request(:query, params)
+        loop do
+          header = read_data
+          check_rpc_error!(header)
+          ev = read_data
+          if ev['Type'] == 'done'
+            break
+          else
+            block.call(ev) if block
+          end
+          sleep 0.1
+        end
+      res
     end
 
     def respond(id, payload)
-      request(:response, 'ID' => id, 'Payload' => payload)
+      request(:respond, 'ID' => id, 'Payload' => payload)
     end
   end
 end

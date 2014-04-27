@@ -74,7 +74,6 @@ module Serfx
     end
 
     def check_rpc_error!(header)
-      Log.debug header.inspect
       raise RPCError, header['Error'] unless header['Error'].empty?
     end
 

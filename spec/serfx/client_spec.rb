@@ -85,7 +85,7 @@ describe Serfx::Client do
     expect(response.body['Members']).to_not be_empty
   end
 
-  it '#stream' do
+  it '#stream and stop' do
     c = Serfx::Connection.new('127.0.0.1', 5000, 'awesomesecret')
     data = nil
     res, t = c.stream('user:test') do |event|
@@ -102,5 +102,21 @@ describe Serfx::Client do
     expect(data['Payload']).to eq('whoa')
     expect(data['Coalesce']).to be_true
     expect(data['Event']).to eq('user')
+  end
+
+  it '#stream, query, respond and stop' do
+    c = Serfx::Connection.new('127.0.0.1', 5000, 'awesomesecret')
+    res, t = c.stream('query') do |q|
+      if q['ID']
+        c.respond(q['ID'], q['Payload'].to_s.upcase)
+      end
+    end
+    sleep 2
+    conn.query('test', 'whoa') do |r|
+      expect(r['Payload']).to eq('WHOA')
+    end
+    sleep 3
+    c.stop(res.header.seq)
+    sleep 2
   end
 end
