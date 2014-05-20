@@ -1,7 +1,6 @@
 # encoding: UTF-8
 #
 require 'spec_helper'
-require 'pry'
 require 'timeout'
 require 'thread'
 
