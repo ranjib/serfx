@@ -5,6 +5,7 @@ $LOAD_PATH.unshift(File.expand_path('../spec', __FILE__))
 require 'rspec'
 require 'serfx'
 require 'singleton'
+require 'tmpdir'
 
 module Serfx
   # adds helper method for unit testing
@@ -37,7 +38,6 @@ module Serfx
 
       def daemonize(dir, join = false)
         command = serf_command(join)
-        # puts command
         pid = spawn(command, out: '/dev/null', chdir: dir)
         Process.detach(pid)
         pid
