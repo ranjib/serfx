@@ -1,6 +1,8 @@
 # encoding: UTF-8
 #
 
+Thread.abort_on_exception = true
+
 module Serfx
   # implements serf's rpc commands
   module Commands
@@ -40,7 +42,7 @@ module Serfx
 
     def stream(types, &block)
       res = request(:stream, 'Type' => types)
-      t = Thread.start do
+      t = Thread.new do
         loop do
           header = read_data
           check_rpc_error!(header)
@@ -50,10 +52,9 @@ module Serfx
           else
             break
           end
-          sleep 0.1
         end
       end
-      [ res, t]
+      [res, t]
     end
 
     def monitor(loglevel = 'debug')
@@ -72,17 +73,16 @@ module Serfx
       params = { 'Name' => name, 'Payload' => payload }
       params.merge!(opts)
       res = request(:query, params)
-        loop do
-          header = read_data
-          check_rpc_error!(header)
-          ev = read_data
-          if ev['Type'] == 'done'
-            break
-          else
-            block.call(ev) if block
-          end
-          sleep 0.1
+      loop do
+        header = read_data
+        check_rpc_error!(header)
+        ev = read_data
+        if ev['Type'] == 'done'
+          break
+        else
+          block.call(ev) if block
         end
+      end
       res
     end
 

@@ -7,7 +7,6 @@ require 'serfx/response'
 require 'serfx/commands'
 require 'serfx/exceptions'
 require 'socket'
-require 'io/wait'
 require 'thread'
 
 Thread.abort_on_exception = true
@@ -36,11 +35,11 @@ module Serfx
 
     attr_reader :host, :port, :seq
 
-    def initialize(host, port, authkey = nil)
-      @host = host
-      @port = port
+    def initialize(opts = {})
+      @host = opts[:host] || '127.0.0.1'
+      @port = opts[:port] || 7373
       @seq = 0
-      @authkey = authkey
+      @authkey = opts[:authkey]
       @requests = {}
       @responses = {}
     end
@@ -94,16 +93,17 @@ module Serfx
     end
 
     def auth
-      handshake if seq == 0
       tcp_send(:auth, 'AuthKey' => @authkey)
       read_response(:auth)
     end
 
     def request(command, body = nil)
-      handshake if seq == 0
-      auth unless @authkey.nil?
       id = tcp_send(command, body)
       read_response(command)
+    end
+
+    def close
+      socket.close
     end
   end
 end
