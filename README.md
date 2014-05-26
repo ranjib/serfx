@@ -29,7 +29,7 @@ conn.close
 
 ## API
 
-``ruby
+```ruby
 conn.handshake
 conn.auth
 conn.event
