@@ -7,9 +7,7 @@ require 'serfx'
 require 'singleton'
 require 'tmpdir'
 require 'codeclimate-test-reporter'
-if ENV['CODE_COVERAGE']
-  CodeClimate::TestReporter.start
-end
+CodeClimate::TestReporter.start if ENV['CODE_COVERAGE']
 
 module Serfx
   # adds helper method for unit testing

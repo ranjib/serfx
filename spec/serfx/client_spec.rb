@@ -3,8 +3,6 @@
 require 'spec_helper'
 require 'timeout'
 require 'thread'
-require 'pry'
-
 
 describe Serfx do
 
@@ -59,11 +57,15 @@ describe Serfx do
     time = 0
     expect do
       Timeout.timeout(10) do
-        node = @conn.members.body['Members'].find { |n|n['Name'] == 'node_4' }
+        node = @conn.members.body['Members'].find do |n|
+          n['Name'] == 'node_4'
+        end
         until node['Status'] == 'left'
           time += 1
           sleep 1
-          node = @conn.members.body['Members'].find { |n|n['Name'] == 'node_4' }
+          node = @conn.members.body['Members'].find do |n|
+            n['Name'] == 'node_4'
+          end
         end
       end
     end.to_not raise_error
@@ -100,7 +102,7 @@ describe Serfx do
   it '#stream and stop' do
     Serfx.connect(port: 5000, authkey: 'awesomesecret') do |c|
       data = nil
-      res, t = c.stream('user:test') do |event|
+      _, t = c.stream('user:test') do |event|
         data = event
       end
       sleep 2
@@ -117,9 +119,7 @@ describe Serfx do
   it '#stream, query, respond and stop' do
     Serfx.connect(port: 5000, authkey: 'awesomesecret') do |c|
       res, t = c.stream('query') do |q|
-        if q['ID']
-          c.respond(q['ID'], q['Payload'].to_s.upcase)
-        end
+        c.respond(q['ID'], q['Payload'].to_s.upcase) if q['ID']
       end
       sleep 3
       @conn.query('test', 'whoa') do |r|
@@ -128,6 +128,5 @@ describe Serfx do
       c.stop(res.header.seq)
       t.kill
     end
-    #binding.pry
   end
 end

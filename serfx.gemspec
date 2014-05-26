@@ -5,13 +5,13 @@ require 'serfx/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'serfx'
-  spec.version       = Serfx::VERSION
+  spec.version       = Serfx::VERSION.dup
   spec.authors       = ['Rnjib Dey']
   spec.email         = ['dey.ranjib@gmail.com']
   spec.summary       = %q{A barebone ruby client for serf}
-  spec.description   = %q{Serfx is a minimal ruby client for serf, an event based orchestration system}
+  spec.description   = %q{Serfx is a minimal ruby client for serf, an event based, distributed, fault tolerant orchestration system}
   spec.homepage      = 'https://github.com/ranjib/serfx'
-  spec.license       = 'MIT'
+  spec.license       = 'Apache'
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }

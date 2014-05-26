@@ -1,14 +1,15 @@
 # encoding: UTF-8
 
 module Serfx
+  # Helper methods for string manipulation
   module Utils
-    # shamelessly taken from chef :-)
-    # https://github.com/opscode/chef/blob/master/lib/chef/mixin/convert_to_class_name.rb
+    # snakecase to camelcase converter. Taken from chef
+    # (mixin/convert_to_class_name.rb)
     def camel_case(str)
       str = str.dup
-      str.gsub!(/[^A-Za-z0-9_]/,'_')
+      str.gsub!(/[^A-Za-z0-9_]/, '_')
       rname = nil
-      regexp = %r{^(.+?)(_(.+))?$}
+      regexp = /^(.+?)(_(.+))?$/
       mn = str.match(regexp)
       if mn
         rname = mn[1].capitalize
@@ -19,9 +20,9 @@ module Serfx
       end
       rname
     end
-
+    # camelcase to snakecase converter
     def snake_case(str)
-      str.gsub(/[A-Z]/) {|s| "_" + s}.downcase.sub(/^\_/, "")
+      str.gsub(/[A-Z]/) { |s| '_' + s }.downcase.sub(/^\_/, '')
     end
   end
 end

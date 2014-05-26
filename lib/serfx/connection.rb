@@ -7,12 +7,11 @@ require 'serfx/response'
 require 'serfx/commands'
 require 'serfx/exceptions'
 require 'socket'
-require 'thread'
-
-Thread.abort_on_exception = true
 
 module Serfx
-  # provide tcp connection layer and msgpack wrapping
+  # This class wraps the low level msgpack data transformation and tcp
+  # communication for the RPC session. methods in this module are used to
+  # implement the actual RPC commands available via [Commands]
   class Connection
     COMMANDS = {
       handshake:        [:header],
@@ -32,9 +31,15 @@ module Serfx
       }
 
     include Serfx::Commands
+    extend Forwardable
 
     attr_reader :host, :port, :seq
+    def_delegators :@socket, :close, :closed?
 
+    # @param  opts [Hash] Specify the RPC connection details
+    # @option opts [Symbol] :host ipaddreess of the target serf agent
+    # @option opts [Symbol] :port port of target serf agents RPC
+    # @option opts [Symbol] :authkey encryption key for RPC communication
     def initialize(opts = {})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 7373
@@ -44,18 +49,37 @@ module Serfx
       @responses = {}
     end
 
+    # creates a tcp socket if does not exist already, against RPC host/port
+    #
+    # @return [TCPSocket]
     def socket
       @socket ||= TCPSocket.new(host, port)
     end
 
+    # creates a MsgPack un-packer object from the tcp socket unless its
+    # already present
+    #
+    # @return [MessagePack::Unpacker]
     def unpacker
       @unpacker ||= MessagePack::Unpacker.new(socket)
     end
-
+    
+    # read data from tcp socket and pipe it through msgpack unpacker for
+    # deserialization
+    #
+    # @return [Hash]
     def read_data
       unpacker.read
     end
-
+    
+    # takes raw RPC command name and an optional request body
+    # and convert them to msgpack encoded data and then send
+    # over tcp
+    #
+    # @param command [String] RPC command name
+    # @param body [Hash] request body of the RPC command
+    #
+    # @return [Integer]
     def tcp_send(command, body = nil)
       @seq += 1
       header = {
@@ -68,14 +92,23 @@ module Serfx
       buff << body.to_msgpack unless body.nil?
       res = socket.send(buff.to_str, 0)
       Log.info("#{__method__}|Res: #{res.inspect}")
-      @requests[seq] = {header: header, ack?: false}
+      @requests[seq] = { header: header, ack?: false }
       seq
     end
-
+    
+    # checks if the RPC response header has `error` field popular or not
+    # raises [RPCError] exception if error string is not empty
+    # 
+    # @param header [Hash] RPC response header as hash
     def check_rpc_error!(header)
-      raise RPCError, header['Error'] unless header['Error'].empty?
+      fail RPCError, header['Error'] unless header['Error'].empty?
     end
 
+
+    # read data from the tcp socket. and convert it to a [Response] object
+    #
+    # @param command [String] RPC command name for which response will be read
+    # @return [Response]
     def read_response(command)
       header =  read_data
       check_rpc_error!(header)
@@ -87,23 +120,14 @@ module Serfx
       end
     end
 
-    def handshake
-      tcp_send(:handshake, 'Version' => 1)
-      read_response(:handshake)
-    end
-
-    def auth
-      tcp_send(:auth, 'AuthKey' => @authkey)
-      read_response(:auth)
-    end
-
+    # make an RPC request against the serf agent
+    #
+    # @param command [String] name of the RPC command
+    # @param body [Hash] an optional request body for the RPC command
+    # @return [Response]
     def request(command, body = nil)
-      id = tcp_send(command, body)
+      tcp_send(command, body)
       read_response(command)
-    end
-
-    def close
-      socket.close
     end
   end
 end

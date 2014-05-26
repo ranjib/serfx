@@ -3,7 +3,7 @@
 require 'mixlib/log'
 
 module Serfx
-  # provides singleton logging facility
+  # Provides singleton logger using mixlib/log library
   class Log
     extend Mixlib::Log
   end
