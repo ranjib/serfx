@@ -1,3 +1,5 @@
 {
-  "rpc_auth" : "awesomesecret"
+  "rpc_auth" : "awesomesecret",
+  "event_handlers": [
+    ]
 }

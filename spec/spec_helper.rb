@@ -6,8 +6,6 @@ require 'rspec'
 require 'serfx'
 require 'singleton'
 require 'tmpdir'
-require 'codeclimate-test-reporter'
-CodeClimate::TestReporter.start if ENV['CODE_COVERAGE']
 
 module Serfx
   # adds helper method for unit testing
@@ -40,7 +38,7 @@ module Serfx
 
       def daemonize(dir, join = false)
         command = serf_command(join)
-        pid = spawn(command, out: '/dev/null', chdir: dir)
+        pid = spawn(command, out: "#{dir}/stdout", chdir: dir)
         Process.detach(pid)
         pid
       end
