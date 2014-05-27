@@ -1,5 +1,4 @@
 {
   "rpc_auth" : "awesomesecret",
-  "event_handlers": [
-    ]
+  "encrypt_key": "QHOYjmYlxSCBhdfiolhtDQ=="
 }
