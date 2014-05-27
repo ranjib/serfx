@@ -27,7 +27,11 @@ module Serfx
       stop:             [:header],
       leave:            [:header],
       query:            [:header],
-      respond:          [:header]
+      respond:          [:header],
+      install_key:      [:header, :body],
+      use_key:          [:header, :body],
+      remove_key:       [:header, :body],
+      list_keys:        [:header, :body]
       }
 
     include Serfx::Commands

@@ -1,3 +1,4 @@
 {
-  "rpc_auth" : "awesomesecret"
+  "rpc_auth" : "awesomesecret",
+  "encrypt_key": "QHOYjmYlxSCBhdfiolhtDQ=="
 }

@@ -3,6 +3,7 @@
 require 'spec_helper'
 require 'timeout'
 require 'thread'
+require 'pry'
 
 describe Serfx do
 
@@ -128,5 +129,19 @@ describe Serfx do
       c.stop(res.header.seq)
       t.kill
     end
+  end
+
+  it '#list, install, use and remove keys' do
+    keys = @conn.list_keys.body['Keys'].keys
+    expect(keys).to include('QHOYjmYlxSCBhdfiolhtDQ==')
+    @conn.install_key('Ih6cZqutM33tMdoFo1iNyw==')
+    keys = @conn.list_keys.body['Keys'].keys
+    expect(keys).to include('Ih6cZqutM33tMdoFo1iNyw==')
+    @conn.use_key('Ih6cZqutM33tMdoFo1iNyw==')
+    new_keys = @conn.list_keys.body['Keys'].keys
+    expect(new_keys.first).to eq('Ih6cZqutM33tMdoFo1iNyw==')
+    @conn.remove_key('QHOYjmYlxSCBhdfiolhtDQ==')
+    final_keys = @conn.list_keys.body['Keys'].keys
+    expect(final_keys.first).to_not include('QHOYjmYlxSCBhdfiolhtDQ==')
   end
 end
