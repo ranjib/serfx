@@ -2,8 +2,6 @@
 #
 require 'spec_helper'
 require 'timeout'
-require 'thread'
-require 'pry'
 
 describe Serfx do
 
