@@ -167,5 +167,36 @@ module Serfx
     def respond(id, payload)
       request(:respond, 'ID' => id, 'Payload' => payload)
     end
+
+    # install a new encryption key onto the cluster's keyring
+    #
+    # @param key [String] 16 bytes of base64-encoded data.
+    # @return  [Response]
+    def install_key(key)
+      request(:install_key, 'Key' => key)
+    end
+
+    # change the primary key, which is used to encrypt messages
+    #
+    # @param key [String] 16 bytes of base64-encoded data.
+    # @return  [Response]
+    def use_key(key)
+      request(:use_key, 'Key' => key)
+    end
+
+    # remove a key from the cluster's keyring
+    #
+    # @param key [String] 16 bytes of base64-encoded data.
+    # @return  [Response]
+    def remove_key(key)
+      request(:remove_key, 'Key' => key)
+    end
+
+    # return a list of all encryption keys currently in use on the cluster
+    #
+    # @return  [Response]
+    def list_keys
+      request(:list_keys)
+    end
   end
 end
