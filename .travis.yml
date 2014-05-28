@@ -9,7 +9,7 @@ rvm:
 branches:
   only:
     - master
-script: "CODE_COVERAGE=1 bundle exec rake spec"
+script: "bundle exec rake spec"
 addons:
   code_climate:
     repo_token: 894a7a896e5ac4a4e7e497051fbc68152f348989a5b930cc3a037c713cf63df0 
