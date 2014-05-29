@@ -31,7 +31,8 @@ module Serfx
       install_key:      [:header, :body],
       use_key:          [:header, :body],
       remove_key:       [:header, :body],
-      list_keys:        [:header, :body]
+      list_keys:        [:header, :body],
+      stats:            [:header, :body]
       }
 
     include Serfx::Commands

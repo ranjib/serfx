@@ -198,5 +198,12 @@ module Serfx
     def list_keys
       request(:list_keys)
     end
+
+    # obtain stats about the agent(same as info command)
+    #
+    # @return  [Response]
+    def stats
+      request(:stats)
+    end
   end
 end
