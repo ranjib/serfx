@@ -142,4 +142,10 @@ describe Serfx do
     final_keys = @conn.list_keys.body['Keys'].keys
     expect(final_keys.first).to_not include('QHOYjmYlxSCBhdfiolhtDQ==')
   end
+
+  it '#stats' do
+    response = @conn.stats
+    expect(response.header.error).to be_empty
+    expect(response.body['serf']['members'].to_i).to eq(5)
+  end
 end
