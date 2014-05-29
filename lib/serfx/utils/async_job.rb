@@ -8,7 +8,7 @@ module Serfx
     # will not process any other event when a handler invocation is
     # in progress. due to this limitations long running tasks can not be
     # orchestrated or invoked as serf handler directly.
-    # [AsynchJob] address this by spawning the task as a background job,
+    # AsynchJob address this by spawning the task as a background job,
     # allowing the handler code to return immediately. It does double fork
     # where the first child process is detached (attached to init as parent
     # process) and spawn the second child process with the target,
