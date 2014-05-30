@@ -81,12 +81,12 @@ module Serfx
 
       # obtain current state information about the task
       #
-      # @return [Hash]
+      # @return [String] JSON string representing current state of the task
       def state_info
         if exists?
-          JSON.parse(File.read(state_file))
+          File.read(state_file)
         else
-          {'status' => 'absent' }
+          JSON.generate(status: 'absent')
         end
       end
 
