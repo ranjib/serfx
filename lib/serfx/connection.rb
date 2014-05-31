@@ -7,6 +7,7 @@ require 'serfx/response'
 require 'serfx/commands'
 require 'serfx/exceptions'
 require 'socket'
+require 'forwardable'
 
 module Serfx
   # This class wraps the low level msgpack data transformation and tcp
