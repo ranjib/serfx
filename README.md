@@ -48,6 +48,100 @@ conn.query('foo', 'bar') do |response|
 end
 ```
 
+## Writing custom handlers
+
+serf agents can be configured to invoke an executable script when an user event is received.
+
+`Serfx::Utils::Handler` module provides a set of helper methods to ease writing ruby based serf event handlers. It wraps the data passed via serf into a convenient `SerfEvent` object, as well as provides observer like API where callbacks can be registered based on event name and type.
+
+For example, following script will respond to any qury event named 'upcase' and return the uppercase version of the original query event's payload
+
+```ruby
+require 'serfx/utils/handler'
+
+include Serfx::Utils::Handler
+
+on :query, 'upcase' do |event|
+  STDOUT.write(event.payload.upcase)
+end
+
+run
+```
+
+Assuming this event handler is configured with `upcase` user event (-event-handler 'query:upcase=/path/to/handler'), it can be used as:
+
+```sh
+serf query -no-ack upcase foo
+Response from 'node1': FOO
+```
+
+## Managing long running tasks via serf handlers
+
+Serf event handler invocations are blocking calls. i.e. serf
+will not process any other event when a handler invocation is
+in progress. Due to this, long running tasks should not be
+invoked as serf handler directly.
+
+AsyncJob helps buildng serf handlers that involve long running commands.
+It starts the command in background, allowing handler code to
+return immediately. It does double fork where the first child process is
+detached (attached to init as parent process) and and the target long
+running task is spawned as a second child process. This allows the first
+child  process to wait and reap the output of actual long running task.
+
+The first child process updates a state file before spawing
+the long ranning task(state='invoking'), during the lon running task
+execution (state='running') and after the spawned process' return
+(state='finished'). This state file provides a convenient way to
+query the current state of an AsyncJob.
+
+AsyncJob porvide four methods to manage jobs. AsyncJob#start will
+start the task. Once started, `AyncJob#state_info` can be used to check
+whether the job is still running or finished. One started a job can be
+either in 'running' state or in 'finished' state. `AsyncJob#reap`
+is used for deleting the state file once the task is finished.
+An AsyncJob can be killed, if its in running state, using the
+`AsyncJob#kill` method. A new AyncJob can not be started unless previous
+AsyncJob with same name/state file is reaped.
+
+```ruby
+require 'serfx/utils/async_job'
+require 'serfx/utils/handler'
+
+include Serfx::Utils::Handler
+
+job = Serfx::Utils::AsyncJob.new(
+  name: "bash_test"
+  command: "bash -c 'for i in `seq 1 300`; do echo $i; sleep 1; done'",
+  state: '/opt/serf/states/long_task'
+  )
+
+on :query, 'bash_test' do |event|
+  case event.payload
+  when 'start'
+    puts job.start
+  when 'kill'
+    puts job.kill
+  when 'reap'
+    puts job.reap
+  when 'check'
+    puts job.state_info
+  else
+    puts 'failed'
+  end
+end
+
+run
+```
+Assuming this handler is configured with `bash_test` query events (-event-handler query:bash_test=/path/to/handler), it can be used as:
+
+```sh
+serf query bash_test start
+serf query bash_test check # check if job is running or finished
+serf query bash_test reap # delete a finished job's state file
+serf query bash_test kill
+```
+
 ## Specifying connection details
 By default Serfx will try to connect to localhost at port 7373 (serf agent's default RPC port). Both `Serfx::Connection#new` as well as `Serfx.connect` accepts a hash specifying connection options i.e host, port, encryption, which can be used to specify non-default values.
 

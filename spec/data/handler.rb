@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'serfx/utils/handler'
 
 include Serfx::Utils::Handler
@@ -7,5 +9,4 @@ on :query, 'upcase' do |event|
     STDOUT.write(event.payload.upcase)
   end
 end
-
 run
