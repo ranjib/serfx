@@ -133,12 +133,16 @@ describe Serfx do
     keys = @conn.list_keys.body['Keys'].keys
     expect(keys).to include('QHOYjmYlxSCBhdfiolhtDQ==')
     @conn.install_key('Ih6cZqutM33tMdoFo1iNyw==')
+    sleep 2
     keys = @conn.list_keys.body['Keys'].keys
     expect(keys).to include('Ih6cZqutM33tMdoFo1iNyw==')
+    sleep 2
     @conn.use_key('Ih6cZqutM33tMdoFo1iNyw==')
     new_keys = @conn.list_keys.body['Keys'].keys
+    sleep 2
     expect(new_keys.first).to eq('Ih6cZqutM33tMdoFo1iNyw==')
     @conn.remove_key('QHOYjmYlxSCBhdfiolhtDQ==')
+    sleep 2
     final_keys = @conn.list_keys.body['Keys'].keys
     expect(final_keys.first).to_not include('QHOYjmYlxSCBhdfiolhtDQ==')
   end
