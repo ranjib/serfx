@@ -46,13 +46,13 @@ module Serfx
             @name = @environment['SERF_QUERY_NAME']
             begin
               @payload = stdin.read_nonblock(4096).strip
-            rescue Errno::EAGAIN => e
+            rescue Errno::EAGAIN, EOFError => e
             end
           when 'user'
             @name = @environment['SERF_USER_EVENT']
             begin
               @payload = stdin.read_nonblock(4096).strip
-            rescue Errno::EAGAIN => e
+            rescue Errno::EAGAIN, EOFError => e
             end
           end
         end
