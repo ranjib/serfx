@@ -69,7 +69,6 @@ module Serfx
     def unpacker
       @unpacker ||= MessagePack::Unpacker.new(socket)
     end
-    
     # read data from tcp socket and pipe it through msgpack unpacker for
     # deserialization
     #
@@ -77,7 +76,7 @@ module Serfx
     def read_data
       unpacker.read
     end
-    
+
     # takes raw RPC command name and an optional request body
     # and convert them to msgpack encoded data and then send
     # over tcp
@@ -101,15 +100,14 @@ module Serfx
       @requests[seq] = { header: header, ack?: false }
       seq
     end
-    
+
     # checks if the RPC response header has `error` field popular or not
     # raises [RPCError] exception if error string is not empty
-    # 
+    #
     # @param header [Hash] RPC response header as hash
     def check_rpc_error!(header)
       fail RPCError, header['Error'] unless header['Error'].empty?
     end
-
 
     # read data from the tcp socket. and convert it to a [Response] object
     #

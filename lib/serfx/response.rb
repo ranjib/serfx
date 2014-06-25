@@ -6,7 +6,6 @@ module Serfx
   # body.
   #
   class Response
-
     # Header is composed of two sub-parts
     # - Seq : an integer representing the original request
     # - Error: a string that represent whether the request made, was

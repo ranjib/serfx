@@ -3,7 +3,6 @@
 require 'json'
 module Serfx
   module Utils
-
     # Serf event handler invocations are blocking calls. i.e. serf
     # will not process any other event when a handler invocation is
     # in progress. Due to this, long running tasks should not be
@@ -68,9 +67,7 @@ module Serfx
     # serf query bash_test check # check if job is running or finished
     # serf query bash_test reap # delete a finished job's state file
     # serf query bash_test kill
-    #
     class AsyncJob
-
       attr_reader :command, :state_file, :stdout_file, :stderr_file
 
       # @param opts [Hash] specify the job details
@@ -96,7 +93,7 @@ module Serfx
           begin
             Process.kill(sig, state_info['pid'].to_i)
             'success'
-          rescue Exception => e
+          rescue Exception
             'failed'
           end
         else
@@ -127,7 +124,6 @@ module Serfx
         end
       end
 
-
       # start a background daemon and spawn another process to run specified
       # command. writes back state information in the state file
       # after spawning daemon process (state=invoking), after spawning the
@@ -136,7 +132,7 @@ module Serfx
       #
       # @return [String] 'success' if task is started
       def start
-        if exists? or command.nil?
+        if exist? || command.nil?
           return 'failed'
         end
         pid = fork do
@@ -149,7 +145,11 @@ module Serfx
           }
           write_state(state)
           begin
-            child_pid = Process.spawn(command, out: stdout_file, err: stderr_file)
+            child_pid = Process.spawn(
+              command,
+              out: stdout_file,
+              err: stderr_file
+            )
             state[:pid] = child_pid
             state[:status] = 'running'
             write_state(state)
@@ -184,13 +184,15 @@ module Serfx
       #
       # @return [TrueClass, FalseClass] true if the task exists, else false
       def exists?
-        File.exists?(state_file)
+        File.exist?(state_file)
       end
 
       # writes a hash as json in the state_file
       # @param [Hash] state represented as a hash, to be written
       def write_state(state)
-        File.open(state_file, 'w'){|f| f.write(JSON.generate(state))}
+        File.open(state_file, 'w') do |f|
+          f.write(JSON.generate(state))
+        end
       end
     end
   end

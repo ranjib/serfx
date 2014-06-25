@@ -8,7 +8,6 @@ module Serfx
   # Implements all of Serf's rpc commands using
   # Serfx::Connection#request method
   module Commands
-
     # performs initial hanshake of an RPC session. Handshake has to be the
     # first command to be invoked during an RPC session.
     #
@@ -43,13 +42,13 @@ module Serfx
     end
 
     # force a failed node to leave the cluster
-    # 
+    #
     # @param node [String] name of the failed node
     # @return  [Response]
     def force_leave(node)
       request(:force_leave, 'Node' => node)
     end
-    
+
     # join an existing cluster.
     #
     # @param existing [Array] an array of existing serf agents
@@ -58,7 +57,7 @@ module Serfx
     def join(existing, replay = false)
       request(:join, 'Existing' => existing, 'Replay' => replay)
     end
-    
+
     # obtain the list of existing members
     #
     # @return  [Response]
@@ -71,6 +70,7 @@ module Serfx
     # @param tags [Array] an array of tags for filter
     # @param status [Boolean] filter members based on their satatus
     # @param name [String] filter based on exact name or pattern.
+    #
     # @return  [Response]
     def members_filtered(tags, status = 'alive', name = nil)
       filter = {
@@ -114,7 +114,7 @@ module Serfx
       end
       [res, t]
     end
-      
+
     # monitor is similar to the stream command, but instead of events it
     # subscribes the channel to log messages from the agent
     #
@@ -123,12 +123,12 @@ module Serfx
     def monitor(loglevel = 'debug')
       request(:monitor, 'LogLevel' => loglevel.upcase)
     end
-    
+
     # stop is used to stop either a stream or monitor
     def stop(sequence_number)
       tcp_send(:stop, 'Stop' => sequence_number)
     end
-    
+
     # leave is used trigger a graceful leave and shutdown of the current agent
     #
     # @return  [Response]

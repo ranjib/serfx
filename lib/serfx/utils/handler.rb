@@ -1,6 +1,5 @@
 module Serfx
   module Utils
-
     # helper module to for serf custom handlers
     #
     # serf agents can be configured to invoke an executable
@@ -22,22 +21,20 @@ module Serfx
     #   end
     #   run
     module Handler
-
       # when serf agent invokes a handler it passes the event payload
       # through STDIN. while event metadata such as event type, name etc
       # is passed as a set of environment variables.
       # [SerfEvent] encapsulates such event.
       class SerfEvent
-
         attr_reader :environment, :payload, :type, :name
 
         # @param env [Hash] environment
         # @param stdin [IO] stadard input stream for the event
         def initialize(env = ENV, stdin = STDIN)
-          @environment ={}
+          @environment = {}
           @payload = nil
           @name = nil
-          env.keys.select{|k|k=~/^SERF/}.each do | k|
+          env.keys.select { |k| k =~ /^SERF/ }.each do | k|
             @environment[k] = env[k].strip
           end
           @type = @environment['SERF_EVENT']
@@ -46,13 +43,13 @@ module Serfx
             @name = @environment['SERF_QUERY_NAME']
             begin
               @payload = stdin.read_nonblock(4096).strip
-            rescue Errno::EAGAIN, EOFError => e
+            rescue Errno::EAGAIN, EOFError
             end
           when 'user'
             @name = @environment['SERF_USER_EVENT']
             begin
               @payload = stdin.read_nonblock(4096).strip
-            rescue Errno::EAGAIN, EOFError => e
+            rescue Errno::EAGAIN, EOFError
             end
           end
         end
@@ -72,7 +69,7 @@ module Serfx
         event = SerfEvent.new
         callbacks[event.type.downcase.to_sym].each do |cbk|
           if cbk.name
-            cbk.block.call(event) if (event.name === cbk.name)
+            cbk.block.call(event) if event.name === cbk.name
           else
             cbk.block.call(event)
           end
@@ -84,7 +81,7 @@ module Serfx
       SerfCallback = Struct.new(:name, :block)
 
       def callbacks
-        @_callbacks ||= Hash.new{|h,k| h[k] = []}
+        @_callbacks ||= Hash.new { |h, k| h[k] = [] }
       end
     end
   end
