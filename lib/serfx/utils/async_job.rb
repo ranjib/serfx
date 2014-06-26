@@ -153,7 +153,7 @@ module Serfx
             state[:pid] = child_pid
             state[:status] = 'running'
             write_state(state)
-            _ , status = Process.wait2(child_pid)
+            _, status = Process.wait2(child_pid)
             state[:exitstatus] = status.exitstatus
             state[:status] = 'finished'
           rescue Errno::ENOENT => e

@@ -34,7 +34,7 @@ module Serfx
       remove_key:       [:header, :body],
       list_keys:        [:header, :body],
       stats:            [:header, :body]
-      }
+    }
 
     include Serfx::Commands
     extend Forwardable
@@ -90,7 +90,7 @@ module Serfx
       header = {
         'Command' => command.to_s.gsub('_', '-'),
         'Seq' => seq
-        }
+      }
       Log.info("#{__method__}|Header: #{header.inspect}")
       buff = MessagePack::Buffer.new
       buff << header.to_msgpack

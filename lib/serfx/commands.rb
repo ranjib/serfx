@@ -76,7 +76,7 @@ module Serfx
       filter = {
         'Tags' => tags,
         'Status' => status
-        }
+      }
       filter['Name'] = name unless name.nil?
       request(:members_filtered, filter)
     end
