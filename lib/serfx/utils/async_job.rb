@@ -132,7 +132,7 @@ module Serfx
       #
       # @return [String] 'success' if task is started
       def start
-        if exist? || command.nil?
+        if exists? || command.nil?
           return 'failed'
         end
         pid = fork do
