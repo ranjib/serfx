@@ -88,7 +88,7 @@ describe Serfx do
     response = @conn.members_filtered('group' => 'odd')
     expect(response.header.error).to be_empty
     tags = response.body['Members'].map { |x|x['Tags']['group'] }
-    expect(tags.all? { |t| t == 'odd' }).to be_true
+    expect(tags.all? { |t| t == 'odd' }).to be(true)
   end
 
   it '#tags' do
@@ -110,7 +110,7 @@ describe Serfx do
       t.kill
       expect(data['Name']).to eq('test')
       expect(data['Payload']).to eq('whoa')
-      expect(data['Coalesce']).to be_true
+      expect(data['Coalesce']).to be(true)
       expect(data['Event']).to eq('user')
     end
   end
