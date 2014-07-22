@@ -15,15 +15,19 @@ module Serfx
   # * host => Serf host's rpc bind address (127.0.0.1 by default)
   # * port => Serf host's rpc port (7373 by default)
   # * authkey => Encryption key for RPC communiction
+  #
+  # @return value of the block evaluation of nil
   def self.connect(opts = {})
     conn = Serfx::Connection.new(opts)
     conn.handshake
     conn.auth if opts.key?(:authkey)
+    res = nil
     if block_given?
-      yield conn
+      res = yield conn
       conn.close unless conn.closed?
     else
       conn
     end
+    res
   end
 end

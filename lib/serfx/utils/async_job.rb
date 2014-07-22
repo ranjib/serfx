@@ -91,7 +91,7 @@ module Serfx
       def kill(sig = 'KILL')
         if running?
           begin
-            Process.kill(sig, state_info['pid'].to_i)
+            Process.kill(sig, stateinfo['pid'].to_i)
             'success'
           rescue Exception
             'failed'
@@ -101,7 +101,7 @@ module Serfx
         end
       end
 
-      # obtain current state information about the task
+      # obtain current state information about the task as json
       #
       # @return [String] JSON string representing current state of the task
       def state_info
@@ -112,11 +112,18 @@ module Serfx
         end
       end
 
+      # obtain current state information about the task as hash
+      #
+      # @return [Hash] JSON string representing current state of the task
+      def stateinfo
+        JSON.parse(state_info)
+      end
+
       # delete the statefile of a finished task
       #
       # @return [String] 'success' if the task is reaped, 'failed' otherwise
       def reap
-        if state_info['status'] == 'finished'
+        if stateinfo['status'] == 'finished'
           File.unlink(state_file)
           'success'
         else
@@ -174,7 +181,7 @@ module Serfx
       # @return [TrueClass, FalseClass] true if the task running, else false
       def running?
         if exists?
-          File.exist?(File.join('/proc', state_info['pid'].to_s))
+          File.exist?(File.join('/proc', stateinfo['pid'].to_s))
         else
           false
         end
