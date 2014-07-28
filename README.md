@@ -166,6 +166,8 @@ Serfx aims to support and is [tested against][serfx-travis] the following Ruby i
 [serfx-travis]: https://travis-ci.org/ranjib/serfx
 
 ## License
+Copyright (c) 2014, PagerDuty
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
