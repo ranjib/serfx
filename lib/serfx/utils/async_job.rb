@@ -68,7 +68,13 @@ module Serfx
     # serf query bash_test reap # delete a finished job's state file
     # serf query bash_test kill
     class AsyncJob
-      attr_reader :command, :state_file, :stdout_file, :stderr_file
+
+      attr_reader :command
+      attr_reader :state_file
+      attr_reader :stdout_file
+      attr_reader :stderr_file
+      attr_reader :environment
+      attr_reader :cwd
 
       # @param opts [Hash] specify the job details
       # @option opts [Symbol] :state file path which will be used to store
@@ -77,11 +83,15 @@ module Serfx
       #   in the background
       # @option opts [Symbol] :stdout standard output file for the task
       # @option opts [Symbol] :stderr standard error file for the task
+      # @option opts [Symbol] :environment a hash containing environment variables
+      # @option opts [Symbol] :cwd a string (directory path) containing current directory of the command
       def initialize(opts = {})
         @state_file = opts[:state] || fail(ArgumentError, 'Specify state file')
         @command = opts[:command]
         @stdout_file = opts[:stdout] || File::NULL
         @stderr_file = opts[:stderr] || File::NULL
+        @environment = opts[:environment] || {}
+        @cwd = opts[:cwd] || Dir.pwd
       end
 
       # kill an already running task
@@ -153,9 +163,11 @@ module Serfx
           write_state(state)
           begin
             child_pid = Process.spawn(
+              environment,
               command,
               out: stdout_file,
-              err: stderr_file
+              err: stderr_file,
+              chdir: cwd
             )
             state[:pid] = child_pid
             state[:status] = 'running'
