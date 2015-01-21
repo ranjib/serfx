@@ -102,6 +102,7 @@ module Serfx
         if running?
           begin
             Process.kill(sig, stateinfo['pid'].to_i)
+            File.unlink(state_file) if File.exist?(state_file)
             'success'
           rescue Exception
             'failed'
