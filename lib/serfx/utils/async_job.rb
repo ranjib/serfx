@@ -100,7 +100,7 @@ module Serfx
 
       # kill an already running task
       #
-      # @param sig [String] kill signal that will sent to the backgroun process
+      # @param sig [String] kill signal that will sent to the background process
       # @return [TrueClass,FalseClass] true on success, false on failure
       def kill(sig = 'KILL')
         if running?
@@ -116,7 +116,7 @@ module Serfx
         end
       end
 
-      # obtain current state information about the task as json
+      # obtain current state information about the task as JSON
       #
       # @return [String] JSON string representing current state of the task
       def state_info
@@ -134,7 +134,7 @@ module Serfx
         JSON.parse(state_info)
       end
 
-      # delete the statefile of a finished task
+      # delete the state file of a finished task
       #
       # @return [String] 'success' if the task is reaped, 'failed' otherwise
       def reap
@@ -211,10 +211,10 @@ module Serfx
         state_file.nil? ? false : File.exist?(state_file)
       end
 
-      # writes a hash as json in the state_file
+      # writes a hash as JSON in the state_file
       # @param [Hash] state represented as a hash, to be written
       def write_state(state)
-        unless state_file.nil?
+        if state_file
           File.open(state_file, 'w') do |f|
             f.write(JSON.generate(state))
           end
