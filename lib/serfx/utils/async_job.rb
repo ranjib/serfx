@@ -8,20 +8,20 @@ module Serfx
     # in progress. Due to this, long running tasks should not be
     # invoked as serf handler directly.
     #
-    # AsyncJob helps buildng serf handlers that involve long running commands.
+    # AsyncJob helps building serf handlers that involve long running commands.
     # It starts the command in background, allowing handler code to
     # return immediately. It does double fork where the first child process is
     # detached (attached to init as parent process) and and the target long
     # running task is spawned as a second child process. This allows the first
     # child  process to wait and reap the output of actual long running task.
     #
-    # The first child process updates a state file before spawing
-    # the long ranning task(state='invoking'), during the lon running task
+    # The first child process updates a state file before spawning
+    # the long ranning task(state='invoking'), during the long running task
     # execution (state='running') and after the spawned process' return
     # (state='finished'). This state file provides a convenient way to
     # query the current state of an AsyncJob.
     #
-    # AsyncJob porvide four methods to manage jobs. AsyncJob#start will
+    # AsyncJob provides four methods to manage jobs. AsyncJob#start will
     # start the task. Once started, AyncJob#state_info can be used to check
     # whether the job is still running or finished. One started a job can be
     # either in 'running' state or in 'finished' state. AsyncJob#reap
@@ -29,6 +29,10 @@ module Serfx
     # An AsyncJob can be killed, if its in running state, using the
     # AsyncJob#kill method. A new AyncJob can not be started unless previous
     # AsyncJob with same name/state file is reaped.
+    #
+    # If the state file is nil, no state will be persisted for the job.
+    # As such, AsyncJob#state_info, AsyncJob#kill, and AsyncJob#reap will
+    # be a NO-OP.
     #
     # Following is an example of writing a serf handler using AsyncJob.
     #
@@ -86,7 +90,7 @@ module Serfx
       # @option opts [Symbol] :environment a hash containing environment variables
       # @option opts [Symbol] :cwd a string (directory path) containing current directory of the command
       def initialize(opts = {})
-        @state_file = opts[:state] || fail(ArgumentError, 'Specify state file')
+        @state_file = opts[:state]
         @command = opts[:command]
         @stdout_file = opts[:stdout] || File::NULL
         @stderr_file = opts[:stderr] || File::NULL
@@ -204,14 +208,16 @@ module Serfx
       #
       # @return [TrueClass, FalseClass] true if the task exists, else false
       def exists?
-        File.exist?(state_file)
+        state_file.nil? ? false : File.exist?(state_file)
       end
 
       # writes a hash as json in the state_file
       # @param [Hash] state represented as a hash, to be written
       def write_state(state)
-        File.open(state_file, 'w') do |f|
-          f.write(JSON.generate(state))
+        unless state_file.nil?
+          File.open(state_file, 'w') do |f|
+            f.write(JSON.generate(state))
+          end
         end
       end
     end
