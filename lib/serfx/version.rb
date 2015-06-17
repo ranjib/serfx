@@ -2,5 +2,5 @@
 #
 # Provides version as a contsant for the serf gem
 module Serfx
-  VERSION = '0.0.8'
+  VERSION = '0.0.9'
 end
