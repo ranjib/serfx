@@ -3,7 +3,7 @@ before_install:
   - bundle install --path .bundle
 rvm:
   - 2.0.0
-  - 2.3
+  - 2.2
 branches:
   only:
     - master
