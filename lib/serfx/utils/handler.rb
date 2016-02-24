@@ -69,7 +69,7 @@ module Serfx
         event = SerfEvent.new
         callbacks[event.type.downcase.to_sym].each do |cbk|
           if cbk.name
-            cbk.block.call(event) if event.name === cbk.name
+            cbk.block.call(event) if cbk.name === event.name
           else
             cbk.block.call(event)
           end
