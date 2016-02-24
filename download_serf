@@ -1,5 +1,5 @@
 #!/bin/bash
 mkdir serf_binaries
 cd serf_binaries
-wget -c https://dl.bintray.com/mitchellh/serf/0.6.0_linux_amd64.zip
-unzip 0.6.0_linux_amd64.zip
+wget -c https://releases.hashicorp.com/serf/0.7.0/serf_0.7.0_linux_amd64.zip
+unzip serf_0.7.0_linux_amd64.zip

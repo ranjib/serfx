@@ -15,7 +15,25 @@ describe Serfx::Utils::Handler do
     end
     ENV['SERF_EVENT'] = 'query'
     ENV['SERF_QUERY_NAME'] = 'foo'
-    STDIN.should_receive(:read_nonblock).and_return('yeah')
+    expect(STDIN).to receive(:read_nonblock).and_return('yeah')
+    CustomHandler.run
+    expect(CustomHandler.state[:payload]).to eq('yeah')
+  end
+
+  it 'accepts event payload as regex' do
+    class CustomHandler
+      extend Serfx::Utils::Handler
+      @@state = {}
+      def self.state
+        @@state
+      end
+      on :query, /foo:\w+/ do |event|
+        @@state[:payload] = event.payload
+      end
+    end
+    ENV['SERF_EVENT'] = 'query'
+    ENV['SERF_QUERY_NAME'] = 'foo:bar'
+    expect(STDIN).to receive(:read_nonblock).and_return('yeah')
     CustomHandler.run
     expect(CustomHandler.state[:payload]).to eq('yeah')
   end
