@@ -33,7 +33,8 @@ module Serfx
       use_key:          [:header, :body],
       remove_key:       [:header, :body],
       list_keys:        [:header, :body],
-      stats:            [:header, :body]
+      stats:            [:header, :body],
+      get_coordinate:   [:header, :body]
     }
 
     include Serfx::Commands

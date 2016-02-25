@@ -205,5 +205,13 @@ module Serfx
     def stats
       request(:stats)
     end
+
+    # obtain network coordinate of a node
+    #
+    # @param node [String] Name of the node
+    # @return  [Response]
+    def get_coordinate
+      request(:get_coordinate, 'Node' => node)
+    end
   end
 end
