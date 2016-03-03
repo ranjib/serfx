@@ -154,11 +154,21 @@ Serfx.client(host: 'serf1.example.com', port: 7373, authkey: 'secret')
 [Detailed api documentation][api-doc] is accessible via rubydoc.
 [api-doc]: http://rubydoc.info/gems/serfx
 
+## Note
+Currently the response of `members` RPC method returns the ipaddress of cluster members as byte array. You can use `unpack` method to convert it to string.
+
+```ruby
+Serfx.client(host: 'serf1.example.com') do |conn|
+  response = conn.members
+  puts response.body['Members'].first['Addr'] # first member's IP in bytes
+  puts response.body['Members'].first['Addr'].unpack('CCCC').join('.') # Same as string
+end
+```
+
 ## Supported ruby versions
 
 Serfx aims to support and is [tested against][serfx-travis] the following Ruby implementations:
 
-* *Ruby 1.9.2*
 * *Ruby 1.9.3*
 * *Ruby 2.0.0*
 * *Ruby 2.1.0*

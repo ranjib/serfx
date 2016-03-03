@@ -88,7 +88,7 @@ describe Serfx do
     response = @conn.members_filtered('group' => 'odd')
     expect(response.header.error).to be_empty
     tags = response.body['Members'].map { |x|x['Tags']['group'] }
-    expect(tags.all? { |t| t == 'odd' }).to be_true
+    expect(tags.all? { |t| t == 'odd' }).to be(true)
   end
 
   it '#tags' do
@@ -110,7 +110,7 @@ describe Serfx do
       t.kill
       expect(data['Name']).to eq('test')
       expect(data['Payload']).to eq('whoa')
-      expect(data['Coalesce']).to be_true
+      expect(data['Coalesce']).to be(true)
       expect(data['Event']).to eq('user')
     end
   end
@@ -133,16 +133,16 @@ describe Serfx do
     keys = @conn.list_keys.body['Keys'].keys
     expect(keys).to include('QHOYjmYlxSCBhdfiolhtDQ==')
     @conn.install_key('Ih6cZqutM33tMdoFo1iNyw==')
-    sleep 2
+    sleep 5
     keys = @conn.list_keys.body['Keys'].keys
     expect(keys).to include('Ih6cZqutM33tMdoFo1iNyw==')
-    sleep 2
+    sleep 5
     @conn.use_key('Ih6cZqutM33tMdoFo1iNyw==')
     new_keys = @conn.list_keys.body['Keys'].keys
-    sleep 2
+    sleep 5
     expect(new_keys.first).to eq('Ih6cZqutM33tMdoFo1iNyw==')
     @conn.remove_key('QHOYjmYlxSCBhdfiolhtDQ==')
-    sleep 2
+    sleep 5
     final_keys = @conn.list_keys.body['Keys'].keys
     expect(final_keys.first).to_not include('QHOYjmYlxSCBhdfiolhtDQ==')
   end

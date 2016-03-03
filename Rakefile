@@ -5,7 +5,7 @@ require 'yard'
 
 RSpec::Core::RakeTask.new("spec")
 
-Rubocop::RakeTask.new(:rubocop) do |task|
+RuboCop::RakeTask.new(:rubocop) do |task|
   task.patterns = ['lib/**/*.rb']
 end
 
