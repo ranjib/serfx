@@ -150,6 +150,10 @@ module Serfx
         header = read_data
         check_rpc_error!(header)
         ev = read_data
+
+        # Ignore responses with an empty From field
+        break if ev['From'].nil? || ev['From'].empty?
+
         if ev['Type'] == 'done'
           break
         else
