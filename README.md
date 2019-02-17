@@ -95,7 +95,7 @@ execution (state='running') and after the spawned process' return
 (state='finished'). This state file provides a convenient way to
 query the current state of an AsyncJob.
 
-AsyncJob porvide four methods to manage jobs. AsyncJob#start will
+AsyncJob provides four methods to manage jobs. AsyncJob#start will
 start the task. Once started, `AyncJob#state_info` can be used to check
 whether the job is still running or finished. One started a job can be
 either in 'running' state or in 'finished' state. `AsyncJob#reap`
@@ -111,7 +111,7 @@ require 'serfx/utils/handler'
 include Serfx::Utils::Handler
 
 job = Serfx::Utils::AsyncJob.new(
-  name: "bash_test"
+  name: "bash_test",
   command: "bash -c 'for i in `seq 1 300`; do echo $i; sleep 1; done'",
   state: '/opt/serf/states/long_task'
   )
